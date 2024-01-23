@@ -4,6 +4,7 @@ import requests
 import tempfile
 import os
 import PyPDF2
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -43,6 +44,8 @@ async def extract_pdf_info(pdf_request: PDFRequest):
         # Clean up the temporary PDF file
         os.remove(pdf_file_path)
 
-        return {"extracted_info": extracted_text.strip()}
+        # Create a JSON response with the extracted information
+        response_data = {"extracted_info": extracted_text.strip()}
+        return JSONResponse(content=response_data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
