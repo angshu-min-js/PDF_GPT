@@ -14,8 +14,11 @@ async def root():
 
 class PDFRequest(BaseModel):
     link: str
+    
+class PDFResponse(BaseModel):
+    extracted_info: str
 
-@app.post("/extract_pdf_info")
+@app.post("/extract_pdf_info", response_model=PDFResponse, operation_id="extractPdfInfo")
 async def extract_pdf_info(pdf_request: PDFRequest):
     try:
         pdf_link = pdf_request.link
@@ -49,7 +52,7 @@ async def extract_pdf_info(pdf_request: PDFRequest):
         os.remove(pdf_file_path)
 
         # Create a JSON response with the extracted information
-        response_data = {"extracted_info": extracted_text.strip()}
-        return JSONResponse(content=response_data)
+        response_data = PDFResponse(extracted_info=extracted_text.strip())
+        return JSONResponse(content=response_data.dict())
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
