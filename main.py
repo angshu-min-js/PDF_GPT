@@ -14,9 +14,20 @@ async def root():
 
 class PDFRequest(BaseModel):
     link: str
-    
+
 class PDFResponse(BaseModel):
     extracted_info: str
+
+def reset_eof_of_pdf_return_stream(pdf_stream_in):
+    # Convert to bytes if it's a list
+    if isinstance(pdf_stream_in, list):
+        pdf_stream_in = b'\n'.join(pdf_stream_in)
+
+    # Check if EOF marker exists; if not, append it
+    if b'%%EOF' not in pdf_stream_in:
+        pdf_stream_in += b'\n%%EOF'
+
+    return pdf_stream_in
 
 @app.post("/extract_pdf_info", response_model=PDFResponse, operation_id="extractPdfInfo")
 async def extract_pdf_info(pdf_request: PDFRequest):
@@ -31,22 +42,28 @@ async def extract_pdf_info(pdf_request: PDFRequest):
 
         # Fetch the PDF content from the provided link with the custom User-Agent
         response = requests.get(pdf_link, headers=headers)
-        
+
         if response.status_code != 200:
             raise HTTPException(status_code=400, detail="Unable to fetch the PDF")
 
-        # Save the PDF content to a temporary file
+        # Reset the EOF marker in the PDF stream
+        corrected_pdf_stream = reset_eof_of_pdf_return_stream(response.content)
+
+        # Create a temporary PDF file with the corrected content
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
-            temp_pdf.write(response.content)
+            temp_pdf.write(corrected_pdf_stream)
             pdf_file_path = temp_pdf.name
 
-        # Extract text from the PDF using PyPDF2
+        # Extract text from the corrected PDF using PyPDF2
         extracted_text = ""
-        with open(pdf_file_path, 'rb') as pdf_file:
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
-            for page_number in range(len(pdf_reader.pages)):
-                page = pdf_reader.pages[page_number]
-                extracted_text += page.extract_text()
+        try:
+            with open(pdf_file_path, 'rb') as pdf_file:
+                pdf_reader = PyPDF2.PdfReader(pdf_file)
+                for page_number in range(len(pdf_reader.pages)):
+                    page = pdf_reader.pages[page_number]
+                    extracted_text += page.extract_text()
+        except Exception as e:
+            extracted_text = f"Error extracting text: {str(e)}"
 
         # Clean up the temporary PDF file
         os.remove(pdf_file_path)
