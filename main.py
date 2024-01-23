@@ -8,6 +8,10 @@ from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
+@app.get("/")
+async def root():
+    return {"message": "Once you pass the PDF link through /extract_pdf_info it should give the response back"}
+
 class PDFRequest(BaseModel):
     link: str
 
