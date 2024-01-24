@@ -1,0 +1,45 @@
+openapi: 3.0.0
+info:
+  title: PDF Extractor API
+  version: 1.0.0
+servers:
+  - url: https://pdf-gpt-iota.vercel.app  # Your API base URL
+paths:
+  /extract_pdf_info:
+    post:
+      summary: Extract information from a PDF
+      operationId: extractPdfInfo  # Operation ID added
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PDFRequest'
+      responses:
+        '200':
+          description: Successful extraction of PDF information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PDFResponse'
+        '400':
+          description: Bad request. PDF link is missing or invalid.
+        '500':
+          description: Internal server error.
+      tags:
+        - PDF
+components:
+  schemas:
+    PDFRequest:
+      type: object
+      properties:
+        link:
+          type: string
+      required:
+        - link
+    PDFResponse:
+      type: object
+      properties:
+        extracted_info:
+          type: string
+
