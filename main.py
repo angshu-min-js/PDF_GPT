@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import requests
@@ -73,3 +74,40 @@ async def extract_pdf_info(pdf_request: PDFRequest):
         return JSONResponse(content=response_data.dict())
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+        
+ 
+class LinkRequest(BaseModel):
+    link: str
+
+class ContentResponse(BaseModel):
+    content: str
+
+@app.post("/read_link_content", response_model=ContentResponse, operation_id="readLinkContent")
+async def read_link_content(link_request: LinkRequest):
+    try:
+        link = link_request.link
+
+        if not link:
+            raise HTTPException(status_code=400, detail="Link is missing in the request")
+
+        # Set a custom User-Agent header
+        headers = {"User-Agent": "Your User Agent String"}
+
+        # Fetch the content from the provided link with the custom User-Agent
+        response = requests.get(link, headers=headers)
+
+        if response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Unable to fetch the content")
+
+        # Extract the content from the response
+        content = response.text
+
+        # Create a Pydantic model instance for the response
+        response_data = ContentResponse(content=content)
+        return response_data
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

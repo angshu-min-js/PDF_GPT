@@ -1,33 +1,78 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  title: PDF Extractor API
+  title: FastAPI PDF and Link Content Extractor
   version: 1.0.0
+  description: Extract PDF content and read content from links.
+  contact:
+    name: Angshuman Gupta
+    email: angshu.gupta789@gmail.com
 servers:
   - url: https://pdf-gpt-iota.vercel.app  # Your API base URL
 paths:
   /extract_pdf_info:
     post:
-      summary: Extract information from a PDF
-      operationId: extractPdfInfo  # Operation ID added
+      summary: Extract text from a PDF link
+      operationId: extractPdfInfo
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PDFRequest'
+              type: object
+              properties:
+                link:
+                  type: string
       responses:
         '200':
-          description: Successful extraction of PDF information
+          description: Extracted PDF content.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PDFResponse'
         '400':
-          description: Bad request. PDF link is missing or invalid.
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPError'
         '500':
           description: Internal server error.
-      tags:
-        - PDF
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPError'
+  /read_link_content:
+    post:
+      summary: Read content from a link
+      operationId: readLinkContent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                link:
+                  type: string
+      responses:
+        '200':
+          description: Extracted content from the link.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentResponse'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPError'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPError'
 components:
   schemas:
     PDFRequest:
