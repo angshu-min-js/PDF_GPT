@@ -7,8 +7,22 @@ info:
     name: Angshuman Gupta
     email: angshu.gupta789@gmail.com
 servers:
-  - url: https://pdf-gpt-iota.vercel.app  # Your API base URL
+  - url: https://pdf-gpt-iota.vercel.app
 paths:
+  /:
+    get:
+      summary: Root endpoint
+      operationId: root
+      responses:
+        "200":
+          description: A simple message.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
   /extract_pdf_info:
     post:
       summary: Extract text from a PDF link
@@ -23,24 +37,24 @@ paths:
                 link:
                   type: string
       responses:
-        '200':
+        "200":
           description: Extracted PDF content.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PDFResponse'
-        '400':
+                $ref: "#/components/schemas/PDFResponse"
+        "400":
           description: Bad request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPError'
-        '500':
+                $ref: "#/components/schemas/HTTPError"
+        "500":
           description: Internal server error.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPError'
+                $ref: "#/components/schemas/HTTPError"
   /read_link_content:
     post:
       summary: Read content from a link
@@ -55,24 +69,24 @@ paths:
                 link:
                   type: string
       responses:
-        '200':
+        "200":
           description: Extracted content from the link.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ContentResponse'
-        '400':
+                $ref: "#/components/schemas/ContentResponse"
+        "400":
           description: Bad request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPError'
-        '500':
+                $ref: "#/components/schemas/HTTPError"
+        "500":
           description: Internal server error.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPError'
+                $ref: "#/components/schemas/HTTPError"
 components:
   schemas:
     PDFRequest:
@@ -80,11 +94,23 @@ components:
       properties:
         link:
           type: string
-      required:
-        - link
     PDFResponse:
       type: object
       properties:
         extracted_info:
           type: string
-
+    LinkRequest:
+      type: object
+      properties:
+        link:
+          type: string
+    ContentResponse:
+      type: object
+      properties:
+        content:
+          type: string
+    HTTPError:
+      type: object
+      properties:
+        detail:
+          type: string
