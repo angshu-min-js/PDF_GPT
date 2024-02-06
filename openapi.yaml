@@ -1,116 +1,129 @@
-openapi: 3.0.3
-info:
-  title: FastAPI PDF and Link Content Extractor
-  version: 1.0.0
-  description: Extract PDF content and read content from links.
-  contact:
-    name: Angshuman Gupta
-    email: angshu.gupta789@gmail.com
-servers:
-  - url: https://pdf-gpt-iota.vercel.app
-paths:
-  /:
-    get:
-      summary: Root endpoint
-      operationId: root
-      responses:
-        "200":
-          description: A simple message.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-  /extract_pdf_info:
-    post:
-      summary: Extract text from a PDF link
-      operationId: extractPdfInfo
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                link:
-                  type: string
-      responses:
-        "200":
-          description: Extracted PDF content.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PDFResponse"
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/HTTPError"
-        "500":
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/HTTPError"
-  /read_link_content:
-    post:
-      summary: Read content from a link
-      operationId: readLinkContent
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                link:
-                  type: string
-      responses:
-        "200":
-          description: Extracted content from the link.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ContentResponse"
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/HTTPError"
-        "500":
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/HTTPError"
-components:
-  schemas:
-    PDFRequest:
-      type: object
-      properties:
-        link:
-          type: string
-    PDFResponse:
-      type: object
-      properties:
-        extracted_info:
-          type: string
-    LinkRequest:
-      type: object
-      properties:
-        link:
-          type: string
-    ContentResponse:
-      type: object
-      properties:
-        content:
-          type: string
-    HTTPError:
-      type: object
-      properties:
-        detail:
-          type: string
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "FastAPI PDF and Link Content Extractor",
+    "version": "1.0.0",
+    "description": "Extract PDF content and read content from links.",
+    "contact": {
+      "name": "Angshuman Gupta",
+      "email": "angshu.gupta789@gmail.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://pdf-gpt-iota.vercel.app"
+    }
+  ],
+  "paths": {
+    "/pdf-to-json/": {
+      "post": {
+        "summary": "Convert PDF from URL to JSON",
+        "operationId": "pdfToJson",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL of the PDF to download and convert to JSON."
+                  }
+                },
+                "required": ["url"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PDF content returned as JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "page": {
+                        "type": "integer",
+                        "description": "The page number."
+                      },
+                      "text": {
+                        "type": "string",
+                        "description": "The extracted text from the page."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request due to invalid URL or download failure."
+          },
+          "500": {
+            "description": "Internal server error when processing the PDF."
+          }
+        }
+      }
+    },
+    "/pdf-gdrive-to-json/": {
+      "post": {
+        "summary": "Convert Google Drive PDF to JSON",
+        "operationId": "pdfGdriveToJson",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The Google Drive URL of the PDF to download and convert to JSON."
+                  }
+                },
+                "required": ["url"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Google Drive PDF content returned as JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "page": {
+                        "type": "integer",
+                        "description": "The page number."
+                      },
+                      "text": {
+                        "type": "string",
+                        "description": "The extracted text from the page."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request due to invalid Google Drive URL or download failure."
+          },
+          "500": {
+            "description": "Internal server error when processing the Google Drive PDF."
+          }
+        }
+      }
+    }
+  }
+}
