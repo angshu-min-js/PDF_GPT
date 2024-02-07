@@ -1,11 +1,31 @@
 import uvicorn
+import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import requests
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 import fitz  # PyMuPDF
 import json
 
+class RequestCounterMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, counter):
+        super().__init__(app)
+        self.counter = counter
+
+    async def dispatch(self, request: Request, call_next):
+        # Check if the request path matches one of the targeted endpoints
+        if request.url.path in ["/pdf-gdrive-to-json/", "/pdf-to-json/"]:
+            self.counter['count'] += 1  # Increment the counter for specific paths
+        response = await call_next(request)
+        return response
+    
 app = FastAPI()
+
+# Define a mutable counter
+request_counter = {'count': 0}
+
+# Add the middleware to the FastAPI application, passing the counter
+app.add_middleware(RequestCounterMiddleware, counter=request_counter)
 
 class PDFRequest(BaseModel):
     url: str
@@ -45,6 +65,10 @@ def read_pdf_from_url(url: str) -> list:
 @app.get("/")
 async def root():
     return {"message": "Once you pass the PDF link through /pdf-to-json or /pdf-gdrive-to-json it should give the response back"}
+
+@app.get("/request-count/")
+async def get_request_count():
+    return {"request_count": request_counter['count']}
 
 @app.post("/pdf-to-json/")
 async def pdf_to_json_endpoint(request: PDFRequest):
